@@ -10,4 +10,11 @@ Built using vanilla JavaScript and HTML5 Canvas.
 - Realistic ball physics and collisions
 - Dark theme for better visibility
 - Smooth animation using RequestAnimationFrame
-- Responsive canvas design 
+- Responsive canvas design
+
+## Technical Details
+- Canvas size: 600x600 pixels
+- Ball radius: 20 pixels
+- Random initial velocities for dynamic movement
+- Elastic collision physics implementation
+- No external dependencies required 
