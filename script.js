@@ -11,13 +11,29 @@ class Ball {
         this.y = y;
         this.radius = radius;
         this.color = color;
-        this.dx = (Math.random() - 0.5) * 8; // Random horizontal velocity
-        this.dy = (Math.random() - 0.5) * 8; // Random vertical velocity
+        this.dx = (Math.random() - 0.5) * 24; // 3x faster horizontal velocity
+        this.dy = (Math.random() - 0.5) * 24; // 3x faster vertical velocity
+        this.deformation = 0; // Current deformation amount
+        this.deformationDirection = { x: 0, y: 0 }; // Direction of deformation
+        this.recoverySpeed = 0.05; // Slower recovery for more visible effect
     }
 
     draw() {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        
+        // Calculate squished radius based on deformation
+        const squishAmount = 1 - (this.deformation * 0.5); // Increased to 50% squish
+        const radiusX = this.radius * (1 + this.deformation * 0.4); // Increased expansion in collision direction
+        const radiusY = this.radius * squishAmount; // Squish perpendicular to collision
+        
+        // Draw squished circle
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(Math.atan2(this.deformationDirection.y, this.deformationDirection.x));
+        ctx.scale(radiusX / this.radius, radiusY / this.radius);
+        ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+        ctx.restore();
+        
         ctx.fillStyle = this.color;
         ctx.fill();
         ctx.closePath();
@@ -27,9 +43,13 @@ class Ball {
         // Bounce off walls
         if (this.x + this.radius > canvas.width || this.x - this.radius < 0) {
             this.dx = -this.dx;
+            this.deformation = 0.5; // Increased deformation on wall collision
+            this.deformationDirection = { x: this.dx > 0 ? -1 : 1, y: 0 };
         }
         if (this.y + this.radius > canvas.height || this.y - this.radius < 0) {
             this.dy = -this.dy;
+            this.deformation = 0.5; // Increased deformation on wall collision
+            this.deformationDirection = { x: 0, y: this.dy > 0 ? -1 : 1 };
         }
 
         // Update position
@@ -72,14 +92,23 @@ class Ball {
                 this.y -= overlap * sin;
                 ball.x += overlap * cos;
                 ball.y += overlap * sin;
+
+                // Add deformation on collision
+                this.deformation = 0.5; // Increased deformation
+                this.deformationDirection = { x: -cos, y: -sin };
+                ball.deformation = 0.5; // Increased deformation
+                ball.deformationDirection = { x: cos, y: sin };
             }
         });
+
+        // Gradually recover from deformation
+        this.deformation = Math.max(0, this.deformation - this.recoverySpeed);
     }
 }
 
 // Create balls
 const balls = [];
-const colors = ['red', 'blue', 'green'];
+const colors = ['red', 'blue', 'green', 'white'];
 const radius = 20;
 
 // Create 2 balls of each color
